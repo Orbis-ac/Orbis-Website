@@ -1,15 +1,20 @@
 {
   "name": "@repo/db",
   "version": "0.0.0",
+  "main": "./dist/index.js",
+  "types": "./index.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./index.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev --name auto",
     "db:deploy": "prisma migrate deploy",
-    "build": "tsup ./index.ts",
-    "dev": "tsup ./index.ts --watch"
+    "build": "tsup ./index.ts --format cjs,esm",
+    "dev": "tsup ./index.ts --format cjs,esm --watch"
   },
   "devDependencies": {
     "@types/pg": "^8.15.6",
