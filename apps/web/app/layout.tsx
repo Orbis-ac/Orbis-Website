@@ -1,10 +1,18 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import { Nunito } from 'next/font/google';
+import Navbar from './components/Navbar';
 import './globals.css';
 
 const hebden = localFont({
   src: './fonts/Hebden.woff2',
   variable: '--font-hebden',
+  display: 'swap',
+});
+
+const nunito = Nunito({
+  subsets: ['latin'],
+  variable: '--font-nunito',
   display: 'swap',
 });
 
@@ -20,7 +28,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={hebden.variable}>
+      <body className={`${hebden.variable} ${nunito.variable}`}>
+        <Navbar />
         {children}
       </body>
     </html>

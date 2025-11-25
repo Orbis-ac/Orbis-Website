@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  PENDING_VERIFICATION
+}
+
+// ============================================
+// USER MODEL
+// ============================================
+
+model User {
+  // Core fields (Better Auth)
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Better Auth relations
+  sessions      Session[]
+  accounts      Account[]
+
+  // Profile fields
+  username      String?   @unique
+  displayName   String?
+  banner        String?
+  bio           String?   @db.Text
+  location      String?
+  website       String?
+
+  // Account management
+  role          UserRole      @default(USER)
+  status        AccountStatus @default(ACTIVE)
+  banReason     String?       @db.Text
+  bannedAt      DateTime?
+  bannedBy      String?
+
+  // Community
+  reputation    Int           @default(0)
+
+  // Preferences
+  emailNotifications    Boolean   @default(true)
+  marketingEmails       Boolean   @default(false)
+  showEmail             Boolean   @default(false)
+  showLocation          Boolean   @default(true)
+  showOnlineStatus      Boolean   @default(true)
+  theme                 String    @default("dark")
+  language              String    @default("en")
+
+  // Activity tracking
+  lastLoginAt   DateTime?
+  lastActiveAt  DateTime?
+
+  // Social relations
+  following     Follow[]      @relation("Follower")
+  followers     Follow[]      @relation("Following")
+
+  @@index([email])
+  @@index([username])
+  @@index([status])
+  @@map("user")
+}
+
+// ============================================
+// BETTER AUTH MODELS
+// ============================================
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ============================================
+// SOCIAL FEATURES
+// ============================================
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower    User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follows")
+}
