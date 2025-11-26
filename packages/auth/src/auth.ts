@@ -1,10 +1,8 @@
-// packages/auth/src/auth.ts
 import {prismaAdapter} from "better-auth/adapters/prisma";
 import {betterAuth} from "better-auth";
 import {prisma} from "@repo/db";
 import {sendResetPasswordEmail, sendVerificationEmail} from "./email";
 
-// Singleton : n'initialise qu'une seule fois
 let authInstance: ReturnType<typeof betterAuth> | null = null;
 
 export const getAuth = () => {
