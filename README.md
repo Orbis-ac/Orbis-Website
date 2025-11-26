@@ -1,73 +1,71 @@
-# Turborepo starter
+# Orbis - Complete Project Overview
 
-This is a community-maintained example. If you experience a problem, please submit a pull request with a fix. GitHub Issues will be closed.
+## Project Summary
 
-## Using this example
-
-Run the following command:
-
-```bash
-npx create-turbo@latest -e with-nestjs
-```
+Orbis is the ultimate community hub for Hytale, inspired by SpigotMC/CurseForge for Minecraft. The project is community-driven and open-source, reflecting Hytale's philosophy.
 
 ## What's inside?
 
-This Turborepo includes the following packages & apps:
+This Turborepo monorepo includes the following packages & apps:
 
 ### Apps and Packages
 
 ```shell
 .
 ├── apps
-│   ├── api                       # NestJS app (https://nestjs.com).
-│   └── web                       # Next.js app (https://nextjs.org).
+│   ├── api                       # NestJS app (https://nestjs.com) - Backend API
+│   └── web                       # Next.js app (https://nextjs.org) - Frontend web application
 └── packages
-    ├── @repo/api                 # Shared `NestJS` resources.
+    ├── @repo/auth                # Authentication package with Better Auth
+    ├── @repo/database            # Prisma database schema and client
     ├── @repo/eslint-config       # `eslint` configurations (includes `prettier`)
     ├── @repo/jest-config         # `jest` configurations
     ├── @repo/typescript-config   # `tsconfig.json`s used throughout the monorepo
-    └── @repo/ui                  # Shareable stub React component library.
+    └── @repo/ui                  # Shareable stub React component library
 ```
 
 Each package and application are mostly written in [TypeScript](https://www.typescriptlang.org/).
 
-### Utilities
+### Tech Stack
 
-This `Turborepo` has some additional tools already set for you:
+This project uses:
 
 - [TypeScript](https://www.typescriptlang.org/) for static type-safety
+- [Next.js](https://nextjs.org/) for the frontend
+- [NestJS](https://nestjs.com) for the backend API
+- [Prisma](https://www.prisma.io/) for database ORM
+- [Better Auth](https://www.better-auth.com/) for authentication with email support
 - [ESLint](https://eslint.org/) for code linting
 - [Prettier](https://prettier.io) for code formatting
-- [Jest](https://prettier.io) & [Playwright](https://playwright.dev/) for testing
+- [Jest](https://jestjs.io/) & [Playwright](https://playwright.dev/) for testing
+- [Turborepo](https://turborepo.com/) for monorepo management
 
 ### Commands
 
-This `Turborepo` already configured useful commands for all your apps and packages.
+#### Development
+
+```bash
+# Run the development server for all apps & packages
+pnpm run dev
+```
 
 #### Build
 
 ```bash
-# Will build all the app & packages with the supported `build` script.
+# Build all apps & packages
 pnpm run build
 
-# ℹ️ If you plan to only build apps individually,
-# Please make sure you've built the packages first.
+# Note: If you plan to build apps individually,
+# please make sure you've built the packages first.
 ```
 
-#### Develop
+#### Test
 
 ```bash
-# Will run the development server for all the app & packages with the supported `dev` script.
-pnpm run dev
-```
-
-#### test
-
-```bash
-# Will launch a test suites for all the app & packages with the supported `test` script.
+# Launch test suites for all apps & packages
 pnpm run test
 
-# You can launch e2e testes with `test:e2e`
+# Run end-to-end tests
 pnpm run test:e2e
 
 # See `@repo/jest-config` to customize the behavior.
@@ -76,7 +74,7 @@ pnpm run test:e2e
 #### Lint
 
 ```bash
-# Will lint all the app & packages with the supported `lint` script.
+# Lint all apps & packages
 # See `@repo/eslint-config` to customize the behavior.
 pnpm run lint
 ```
@@ -84,7 +82,7 @@ pnpm run lint
 #### Format
 
 ```bash
-# Will format all the supported `.ts,.js,json,.tsx,.jsx` files.
+# Format all supported `.ts,.js,json,.tsx,.jsx` files
 # See `@repo/eslint-config/prettier-base.js` to customize the behavior.
 pnpm format
 ```
@@ -92,7 +90,7 @@ pnpm format
 ### Remote Caching
 
 > [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
 
 Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
 
@@ -110,15 +108,16 @@ Next, you can link your Turborepo to your Remote Cache by running the following 
 npx turbo link
 ```
 
+## Contributing
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.
+
 ## Useful Links
 
-This example take some inspiration the [with-nextjs](https://github.com/vercel/turborepo/tree/main/examples/with-nextjs) `Turbo` example and [01-cats-app](https://github.com/nestjs/nest/tree/master/sample/01-cats-app) `NestJs` sample.
+Learn more about the technologies used:
 
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+- [Turborepo Documentation](https://turborepo.com/)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [NestJS Documentation](https://docs.nestjs.com/)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [Better Auth Documentation](https://www.better-auth.com/docs)
