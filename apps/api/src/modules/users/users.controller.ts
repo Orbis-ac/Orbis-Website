@@ -1,12 +1,9 @@
 import {Controller, Get} from "@nestjs/common";
-import {
-    AllowAnonymous,
-    OptionalAuth,
-    Roles, Session, UserSession,
-} from "@thallesp/nestjs-better-auth";
+import {AllowAnonymous, OptionalAuth, Roles, Session, UserSession,} from "@thallesp/nestjs-better-auth";
 
 @Controller("users")
 export class UserController {
+
     @Get("public")
     @AllowAnonymous() // Allow anonymous access (no authentication required)
     async publicRoute() {

@@ -1,13 +1,24 @@
+// apps/api/src/main.ts
 import {NestFactory} from '@nestjs/core';
-
 import {AppModule} from './app.module';
 import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger';
+import {ConfigService} from "@nestjs/config";
+import {initializeEmail} from "@repo/auth";
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
         bodyParser: false,
     });
-    app.enableCors()
+    app.enableCors();
+
+    const configService = app.get(ConfigService);
+    const resendApiKey = configService.get<string>('RESEND_API_KEY');
+
+    if (!resendApiKey) {
+        throw new Error('RESEND_API_KEY not found in .env');
+    }
+
+    initializeEmail(resendApiKey);
 
     const config = new DocumentBuilder()
         .setTitle('Orbis API')
