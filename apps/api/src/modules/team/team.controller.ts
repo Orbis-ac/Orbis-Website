@@ -1,0 +1,197 @@
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Query,
+    UploadedFile,
+    UseInterceptors,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { AllowAnonymous, Session, UserSession } from '@thallesp/nestjs-better-auth';
+import { TeamService } from './team.service';
+import { CreateTeamDto } from './dtos/create-team.dto';
+import { UpdateTeamDto } from './dtos/update-team.dto';
+import { FilterTeamsDto } from './dtos/filter-teams.dto';
+import { AddTeamMemberDto, UpdateTeamMemberDto } from './dtos/manage-member.dto';
+
+@ApiTags('teams')
+@Controller('teams')
+export class TeamController {
+    constructor(private readonly teamService: TeamService) {}
+
+    // ============================================
+    // PUBLIC ENDPOINTS
+    // ============================================
+
+    @Get()
+    @AllowAnonymous()
+    @ApiOperation({ summary: 'Get all teams with filters and pagination' })
+    async findAll(@Query() filterDto: FilterTeamsDto) {
+        return this.teamService.findAll(filterDto);
+    }
+
+    @Get(':name')
+    @AllowAnonymous()
+    @ApiOperation({ summary: 'Get team by name' })
+    @ApiParam({ name: 'name', description: 'Team name' })
+    async findByName(@Param('name') name: string) {
+        return this.teamService.findByName(name);
+    }
+
+    // ============================================
+    // AUTHENTICATED ENDPOINTS - TEAM MANAGEMENT
+    // ============================================
+
+    @Post()
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Create a new team' })
+    async create(
+        @Session() session: UserSession,
+        @Body() createDto: CreateTeamDto,
+    ) {
+        return this.teamService.create(session.user.id, createDto);
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Update team' })
+    @ApiParam({ name: 'id', description: 'Team ID' })
+    async update(
+        @Session() session: UserSession,
+        @Param('id') teamId: string,
+        @Body() updateDto: UpdateTeamDto,
+    ) {
+        return this.teamService.update(session.user.id, teamId, updateDto);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Delete team' })
+    @ApiParam({ name: 'id', description: 'Team ID' })
+    async delete(
+        @Session() session: UserSession,
+        @Param('id') teamId: string,
+    ) {
+        return this.teamService.delete(session.user.id, teamId);
+    }
+
+    // ============================================
+    // FILE UPLOAD ENDPOINTS
+    // ============================================
+
+    @Post(':id/logo')
+    @ApiBearerAuth()
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Upload team logo' })
+    @ApiParam({ name: 'id', description: 'Team ID' })
+    @UseInterceptors(FileInterceptor('logo'))
+    async uploadLogo(
+        @Session() session: UserSession,
+        @Param('id') teamId: string,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return this.teamService.uploadLogo(session.user.id, teamId, file);
+    }
+
+    @Post(':id/banner')
+    @ApiBearerAuth()
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Upload team banner' })
+    @ApiParam({ name: 'id', description: 'Team ID' })
+    @UseInterceptors(FileInterceptor('banner'))
+    async uploadBanner(
+        @Session() session: UserSession,
+        @Param('id') teamId: string,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return this.teamService.uploadBanner(session.user.id, teamId, file);
+    }
+
+    @Delete(':id/logo')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Delete team logo' })
+    @ApiParam({ name: 'id', description: 'Team ID' })
+    async deleteLogo(
+        @Session() session: UserSession,
+        @Param('id') teamId: string,
+    ) {
+        return this.teamService.deleteLogo(session.user.id, teamId);
+    }
+
+    @Delete(':id/banner')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Delete team banner' })
+    @ApiParam({ name: 'id', description: 'Team ID' })
+    async deleteBanner(
+        @Session() session: UserSession,
+        @Param('id') teamId: string,
+    ) {
+        return this.teamService.deleteBanner(session.user.id, teamId);
+    }
+
+    // ============================================
+    // MEMBER MANAGEMENT ENDPOINTS
+    // ============================================
+
+    @Post(':id/members')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Add member to team' })
+    @ApiParam({ name: 'id', description: 'Team ID' })
+    async addMember(
+        @Session() session: UserSession,
+        @Param('id') teamId: string,
+        @Body() addDto: AddTeamMemberDto,
+    ) {
+        return this.teamService.addMember(session.user.id, teamId, addDto);
+    }
+
+    @Patch(':id/members/:memberId')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Update team member role' })
+    @ApiParam({ name: 'id', description: 'Team ID' })
+    @ApiParam({ name: 'memberId', description: 'Team member ID' })
+    async updateMember(
+        @Session() session: UserSession,
+        @Param('id') teamId: string,
+        @Param('memberId') memberId: string,
+        @Body() updateDto: UpdateTeamMemberDto,
+    ) {
+        return this.teamService.updateMember(session.user.id, teamId, memberId, updateDto);
+    }
+
+    @Delete(':id/members/:memberId')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Remove member from team' })
+    @ApiParam({ name: 'id', description: 'Team ID' })
+    @ApiParam({ name: 'memberId', description: 'Team member ID' })
+    async removeMember(
+        @Session() session: UserSession,
+        @Param('id') teamId: string,
+        @Param('memberId') memberId: string,
+    ) {
+        return this.teamService.removeMember(session.user.id, teamId, memberId);
+    }
+
+    @Post(':id/leave')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Leave team' })
+    @ApiParam({ name: 'id', description: 'Team ID' })
+    async leaveTeam(
+        @Session() session: UserSession,
+        @Param('id') teamId: string,
+    ) {
+        return this.teamService.leaveTeam(session.user.id, teamId);
+    }
+
+    @Get('user/my-teams')
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get current user teams' })
+    async getMyTeams(@Session() session: UserSession) {
+        return this.teamService.getUserTeams(session.user.id);
+    }
+}

@@ -7,8 +7,10 @@ import {PrismaModule} from "./prisma/prisma.module";
 import {AuthModule} from '@thallesp/nestjs-better-auth';
 import {UserModule} from "./modules/user/user.module";
 import {AuthModule as OrbisAuthModule} from "./modules/auth/auth.module";
-import { ConfigModule } from '@nestjs/config';
+import {ConfigModule} from '@nestjs/config';
 import {auth} from '@repo/auth';
+import {ServerModule} from "./modules/server/server.module";
+import {TeamModule} from "./modules/team/team.module";
 
 @Module({
     imports: [
@@ -16,7 +18,7 @@ import {auth} from '@repo/auth';
             isGlobal: true,
             envFilePath: '.env',
         }),
-        PrismaModule, AuthModule.forRoot({auth}), UserModule, OrbisAuthModule],
+        PrismaModule, AuthModule.forRoot({auth}), UserModule, OrbisAuthModule, ServerModule, TeamModule],
     controllers: [AppController],
     providers: [AppService],
 })

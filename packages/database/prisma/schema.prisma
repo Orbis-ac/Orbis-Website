@@ -26,58 +26,84 @@ enum AccountStatus {
   PENDING_VERIFICATION
 }
 
+enum ServerStatus {
+  PENDING // Waiting for admin approval
+  APPROVED // Live and visible
+  REJECTED // Rejected by admin
+  SUSPENDED // Temporarily suspended
+  ARCHIVED // Archived by owner
+}
+
+enum TeamMemberRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
 // ============================================
 // USER MODEL
 // ============================================
 
 model User {
   // Core fields (Better Auth)
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  id            String   @id @default(cuid())
+  username          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  banned        Boolean  @default(false)
 
   // Better Auth relations
-  sessions      Session[]
-  accounts      Account[]
+  sessions Session[]
+  accounts Account[]
 
   // Profile fields
-  username      String?   @unique
-  displayName   String?
-  banner        String?
-  bio           String?   @db.Text
-  location      String?
-  website       String?
+  displayName String?
+  banner      String?
+  bio         String? @db.Text
+  location    String?
+  website     String?
 
   // Account management
-  role          UserRole      @default(USER)
-  status        AccountStatus @default(ACTIVE)
-  banReason     String?       @db.Text
-  bannedAt      DateTime?
-  bannedBy      String?
+  role      UserRole      @default(USER)
+  status    AccountStatus @default(ACTIVE)
+  banReason String?       @db.Text
+  bannedAt  DateTime?
+  bannedBy  String?
 
   // Community
-  reputation    Int           @default(0)
+  reputation Int @default(0)
 
   // Preferences
-  emailNotifications    Boolean   @default(true)
-  marketingEmails       Boolean   @default(false)
-  showEmail             Boolean   @default(false)
-  showLocation          Boolean   @default(true)
-  showOnlineStatus      Boolean   @default(true)
-  theme                 String    @default("dark")
-  language              String    @default("en")
+  emailNotifications Boolean @default(true)
+  marketingEmails    Boolean @default(false)
+  showEmail          Boolean @default(false)
+  showLocation       Boolean @default(true)
+  showOnlineStatus   Boolean @default(true)
+  theme              String  @default("dark")
+  language           String  @default("en")
 
   // Activity tracking
-  lastLoginAt   DateTime?
-  lastActiveAt  DateTime?
+  lastLoginAt  DateTime?
+  lastActiveAt DateTime?
 
   // Social relations
-  following     Follow[]      @relation("Follower")
-  followers     Follow[]      @relation("Following")
+  following Follow[] @relation("Follower")
+  followers Follow[] @relation("Following")
+
+  // Server ownership
+  ownedServers    Server[] @relation("ServerOwner")
+  approvedServers Server[] @relation("ServerApprover")
+
+  // Team relations
+  ownedTeams      Team[]       @relation("TeamOwner")
+  teamMemberships TeamMember[] @relation("TeamMemberships")
+
+  // Server status changes
+  statusChanges ServerStatusHistory[] @relation("StatusChanger")
 
   @@index([email])
   @@index([username])
@@ -146,11 +172,235 @@ model Follow {
   followingId String
   createdAt   DateTime @default(now())
 
-  follower    User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
-  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
   @@index([followerId])
   @@index([followingId])
   @@map("follows")
 }
+
+// ============================================
+// TEAMS (Future feature - prepared)
+// ============================================
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  displayName String
+  description String?  @db.Text
+  logo        String?
+  banner      String?
+  website     String?
+  discordUrl  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Ownership
+  ownerId String
+  owner   User   @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Relations
+  members TeamMember[]
+  servers Server[]
+
+  @@index([ownerId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id        String         @id @default(cuid())
+  teamId    String
+  userId    String
+  role      TeamMemberRole @default(MEMBER)
+  joinedAt  DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation("TeamMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([teamId])
+  @@index([userId])
+  @@map("team_members")
+}
+
+// ============================================
+// SERVER LISTING
+// ============================================
+
+model Server {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  // Basic Information
+  name        String
+  slug        String       @unique
+  description String       @db.Text
+  shortDesc   String?      @db.VarChar(200)
+  serverIp    String
+  port        Int          @default(25565)
+  status      ServerStatus @default(PENDING)
+
+  // Media
+  logo   String?
+  banner String?
+
+  // Game Information
+  gameVersion       String
+  supportedVersions String[] // Array of supported versions
+
+  // Player Statistics
+  currentPlayers Int       @default(0)
+  maxPlayers     Int       @default(100)
+  isOnline       Boolean   @default(false)
+  lastPing       DateTime?
+
+  playerHistory ServerPlayerHistory[]
+
+  // Voting (Just counter for now, full system later)
+  votesCount Int @default(0)
+
+  // Links
+  websiteUrl String?
+  discordUrl String?
+  youtubeUrl String?
+  twitterUrl String?
+  tiktokUrl  String?
+
+  // Visibility & Features
+  featured Boolean @default(false)
+  verified Boolean @default(false)
+
+  // Moderation
+  rejectionReason String?   @db.Text
+  approvedAt      DateTime?
+  approvedBy      String?
+  approver        User?     @relation("ServerApprover", fields: [approvedBy], references: [id], onDelete: SetNull)
+
+  // Ownership (User OR Team)
+  ownerId String
+  owner   User    @relation("ServerOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  teamId  String?
+  team    Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  // Relations
+  tags          ServerTagRelation[]
+  categories    ServerCategoryRelation[]
+  statusHistory ServerStatusHistory[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([ownerId])
+  @@index([teamId])
+  @@index([featured])
+  @@index([votesCount])
+  @@index([createdAt])
+  @@index([isOnline])
+  @@map("servers")
+}
+
+// ============================================
+// SERVER TAGS & CATEGORIES
+// ============================================
+
+model ServerTag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  color       String?  @default("#69a024")
+  icon        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  servers ServerTagRelation[]
+
+  @@map("server_tags")
+}
+
+model ServerTagRelation {
+  id       String @id @default(cuid())
+  serverId String
+  tagId    String
+
+  server Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  tag    ServerTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([serverId, tagId])
+  @@index([serverId])
+  @@index([tagId])
+  @@map("server_tag_relations")
+}
+
+model ServerCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  icon        String?
+  color       String?  @default("#69a024")
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  servers ServerCategoryRelation[]
+
+  @@map("server_categories")
+}
+
+model ServerCategoryRelation {
+  id         String  @id @default(cuid())
+  serverId   String
+  categoryId String
+  isPrimary  Boolean @default(false) // One primary category per server
+
+  server   Server         @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  category ServerCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([serverId, categoryId])
+  @@index([serverId])
+  @@index([categoryId])
+  @@map("server_category_relations")
+}
+
+// ============================================
+// SERVER STATUS & HISTORY
+// ============================================
+
+model ServerStatusHistory {
+  id        String        @id @default(cuid())
+  serverId  String
+  oldStatus ServerStatus?
+  newStatus ServerStatus
+  reason    String?       @db.Text
+  changedAt DateTime      @default(now())
+  changedBy String?
+
+  server  Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  changer User?  @relation("StatusChanger", fields: [changedBy], references: [id], onDelete: SetNull)
+
+  @@index([serverId])
+  @@index([changedAt])
+  @@map("server_status_history")
+}
+
+model ServerPlayerHistory {
+  id        String   @id @default(cuid())
+  serverId  String
+  timestamp DateTime @default(now())
+
+  currentPlayers Int
+  isOnline       Boolean
+  pingMs         Int?
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId, timestamp])
+  @@index([timestamp])
+  @@map("server_player_history")
+}
+

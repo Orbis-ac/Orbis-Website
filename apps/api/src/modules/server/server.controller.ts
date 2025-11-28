@@ -1,0 +1,200 @@
+// server.controller.ts
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Query,
+    UploadedFile,
+    UseInterceptors,
+} from '@nestjs/common';
+import {ApiBearerAuth, ApiConsumes, ApiOperation, ApiParam, ApiTags,} from '@nestjs/swagger';
+import {FileInterceptor} from '@nestjs/platform-express';
+import {AllowAnonymous, Roles, Session, UserSession} from '@thallesp/nestjs-better-auth';
+import {ServerService} from './server.service';
+import {CreateServerDto} from './dtos/create-server.dto';
+import {UpdateServerDto} from './dtos/update-server.dto';
+import {FilterServersDto} from './dtos/filter-servers.dto';
+import {ModerateServerDto, RejectServerDto} from './dtos/moderate-server.dto';
+import {UserRole} from '@repo/db';
+
+@ApiTags('servers')
+@Controller('servers')
+export class ServerController {
+    constructor(private readonly serverService: ServerService) {
+    }
+
+    // ============================================
+    // PUBLIC ENDPOINTS
+    // ============================================
+
+    @Get()
+    @AllowAnonymous()
+    @ApiOperation({summary: 'Get all servers with filters and pagination'})
+    async findAll(@Query() filterDto: FilterServersDto) {
+        return this.serverService.findAll(filterDto);
+    }
+
+    @Get(':slug')
+    @AllowAnonymous()
+    @ApiOperation({summary: 'Get server by slug'})
+    @ApiParam({name: 'slug', description: 'Server slug'})
+    async findBySlug(@Param('slug') slug: string) {
+        return this.serverService.findBySlug(slug);
+    }
+
+    // ============================================
+    // AUTHENTICATED ENDPOINTS
+    // ============================================
+
+    @Post()
+    @ApiBearerAuth()
+    @ApiOperation({summary: 'Create a new server'})
+    async create(
+        @Session() session: UserSession,
+        @Body() createDto: CreateServerDto,
+    ) {
+        return this.serverService.create(session.user.id, createDto);
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth()
+    @ApiOperation({summary: 'Update server'})
+    @ApiParam({name: 'id', description: 'Server ID'})
+    async update(
+        @Session() session: UserSession,
+        @Param('id') serverId: string,
+        @Body() updateDto: UpdateServerDto,
+    ) {
+        return this.serverService.update(session.user.id, serverId, updateDto);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth()
+    @ApiOperation({summary: 'Delete server (archive)'})
+    @ApiParam({name: 'id', description: 'Server ID'})
+    async delete(
+        @Session() session: UserSession,
+        @Param('id') serverId: string,
+    ) {
+        return this.serverService.delete(session.user.id, serverId);
+    }
+
+    // ============================================
+    // FILE UPLOAD ENDPOINTS
+    // ============================================
+
+    @Post(':id/logo')
+    @ApiBearerAuth()
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({summary: 'Upload server logo'})
+    @ApiParam({name: 'id', description: 'Server ID'})
+    @UseInterceptors(FileInterceptor('logo'))
+    async uploadLogo(
+        @Session() session: UserSession,
+        @Param('id') serverId: string,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return this.serverService.uploadLogo(session.user.id, serverId, file);
+    }
+
+    @Post(':id/banner')
+    @ApiBearerAuth()
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({summary: 'Upload server banner'})
+    @ApiParam({name: 'id', description: 'Server ID'})
+    @UseInterceptors(FileInterceptor('banner'))
+    async uploadBanner(
+        @Session() session: UserSession,
+        @Param('id') serverId: string,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return this.serverService.uploadBanner(session.user.id, serverId, file);
+    }
+
+    @Delete(':id/logo')
+    @ApiBearerAuth()
+    @ApiOperation({summary: 'Delete server logo'})
+    @ApiParam({name: 'id', description: 'Server ID'})
+    async deleteLogo(
+        @Session() session: UserSession,
+        @Param('id') serverId: string,
+    ) {
+        return this.serverService.deleteLogo(session.user.id, serverId);
+    }
+
+    @Delete(':id/banner')
+    @ApiBearerAuth()
+    @ApiOperation({summary: 'Delete server banner'})
+    @ApiParam({name: 'id', description: 'Server ID'})
+    async deleteBanner(
+        @Session() session: UserSession,
+        @Param('id') serverId: string,
+    ) {
+        return this.serverService.deleteBanner(session.user.id, serverId);
+    }
+
+    // ============================================
+    // ADMIN MODERATION ENDPOINTS
+    // ============================================
+
+    @Post(':id/approve')
+    @ApiBearerAuth()
+    @Roles([
+        UserRole.ADMIN, UserRole.SUPER_ADMIN
+    ])
+    @ApiOperation({summary: 'Approve server (Admin only)'})
+    @ApiParam({name: 'id', description: 'Server ID'})
+    async approve(
+        @Session() session: UserSession,
+        @Param('id') serverId: string,
+        @Body() moderateDto: ModerateServerDto,
+    ) {
+        return this.serverService.approve(
+            session.user.id,
+            serverId,
+            moderateDto?.reason,
+        );
+    }
+
+    @Post(':id/reject')
+    @ApiBearerAuth()
+    @Roles([UserRole.ADMIN, UserRole.SUPER_ADMIN])
+    @ApiOperation({summary: 'Reject server (Admin only)'})
+    @ApiParam({name: 'id', description: 'Server ID'})
+    async reject(
+        @Session() session: UserSession,
+        @Param('id') serverId: string,
+        @Body() rejectDto: RejectServerDto,
+    ) {
+        return this.serverService.reject(
+            session.user.id,
+            serverId,
+            rejectDto?.reason,
+        );
+    }
+
+    @Post(':id/suspend')
+    @ApiBearerAuth()
+    @Roles([UserRole.ADMIN, UserRole.SUPER_ADMIN])
+    @ApiOperation({summary: 'Suspend server (Admin only)'})
+    @ApiParam({name: 'id', description: 'Server ID'})
+    async suspend(
+        @Session() session: UserSession,
+        @Param('id') serverId: string,
+        @Body() moderateDto: ModerateServerDto,
+    ) {
+        if (!moderateDto.reason) {
+            throw new BadRequestException('Reason is required for suspension');
+        }
+        return this.serverService.suspend(
+            session.user.id,
+            serverId,
+            moderateDto.reason,
+        );
+    }
+}
