@@ -12,6 +12,7 @@ import {auth} from '@repo/auth';
 import {ServerModule} from "./modules/server/server.module";
 import {TeamModule} from "./modules/team/team.module";
 import {ReportModule} from "./modules/report/report.module";
+import {BadgeModule} from "./modules/badge/badge.module";
 
 @Module({
     imports: [
@@ -19,7 +20,7 @@ import {ReportModule} from "./modules/report/report.module";
             isGlobal: true,
             envFilePath: '.env',
         }),
-        PrismaModule, AuthModule.forRoot({auth}), UserModule, OrbisAuthModule, ServerModule, TeamModule, ReportModule],
+        PrismaModule, AuthModule.forRoot({auth}), UserModule, OrbisAuthModule, ServerModule, TeamModule, ReportModule, BadgeModule],
     controllers: [AppController],
     providers: [AppService],
 })
