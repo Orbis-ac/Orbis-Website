@@ -1,13 +1,29 @@
-import { Module } from '@nestjs/common';
+import {Module} from '@nestjs/common';
 
-import { LinksModule } from './links/links.module';
+import {AppService} from './app.service';
+import {AppController} from './app.controller';
+import {PrismaModule} from "./prisma/prisma.module";
 
-import { AppService } from './app.service';
-import { AppController } from './app.controller';
+import {AuthModule} from '@thallesp/nestjs-better-auth';
+import {UserModule} from "./modules/user/user.module";
+import {AuthModule as OrbisAuthModule} from "./modules/auth/auth.module";
+import {ConfigModule} from '@nestjs/config';
+import {auth} from '@repo/auth';
+import {ServerModule} from "./modules/server/server.module";
+import {TeamModule} from "./modules/team/team.module";
+import {ReportModule} from "./modules/report/report.module";
+import {BadgeModule} from "./modules/badge/badge.module";
+import {ResourceModule} from "./modules/resource/resource.module";
 
 @Module({
-  imports: [LinksModule],
-  controllers: [AppController],
-  providers: [AppService],
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: '.env',
+        }),
+        PrismaModule, AuthModule.forRoot({auth}), UserModule, OrbisAuthModule, ServerModule, TeamModule, ReportModule, BadgeModule, ResourceModule],
+    controllers: [AppController],
+    providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+}

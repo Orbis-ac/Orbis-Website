@@ -1,0 +1,50 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+    IsString,
+    IsNotEmpty,
+    IsOptional,
+    IsUrl,
+    MinLength,
+    MaxLength,
+} from 'class-validator';
+
+export class CreateTeamDto {
+    @ApiProperty({ example: 'hypixel', description: 'Unique team identifier (lowercase, no spaces)' })
+    @IsString()
+    @IsNotEmpty()
+    @MinLength(3)
+    @MaxLength(30)
+    name: string;
+
+    @ApiProperty({ example: 'Hypixel Studios', description: 'Display name for the team' })
+    @IsString()
+    @IsNotEmpty()
+    @MinLength(3)
+    @MaxLength(50)
+    displayName: string;
+
+    @ApiPropertyOptional({
+        example: 'A team dedicated to creating amazing Hytale servers...',
+        description: 'Team description',
+    })
+    @IsString()
+    @IsOptional()
+    @MaxLength(2000)
+    description?: string;
+
+    @ApiPropertyOptional({
+        example: 'https://example.com',
+        description: 'Team website URL',
+    })
+    @IsUrl()
+    @IsOptional()
+    websiteUrl?: string;
+
+    @ApiPropertyOptional({
+        example: 'https://discord.gg/example',
+        description: 'Discord server URL',
+    })
+    @IsUrl()
+    @IsOptional()
+    discordUrl?: string;
+}
