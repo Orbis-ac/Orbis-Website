@@ -19,11 +19,11 @@ const dashboardNav = [
         href: '/dashboard/notifications',
         icon: 'mdi:bell',
       },
-      {
+     /* {
         name: 'Collections',
         href: '/dashboard/collections',
         icon: 'mdi:view-list',
-      },
+      },*/
     ],
   },
   {
@@ -78,7 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </h3>
                   <ul className="space-y-1">
                     {section.items.map((item) => {
-                      const isActive = pathname === item.href;
+                      const isActive = pathname.startsWith(item.href);
                       return (
                         <li key={item.href}>
                           <Link

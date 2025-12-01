@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Icon } from '@iconify-icon/react';
 import { Button } from '@/components/ui/button';
 import { useSessionStore } from '@/stores/useSessionStore';
@@ -24,8 +25,8 @@ interface Team {
   description?: string;
   websiteUrl?: string;
   discordUrl?: string;
-  logoUrl?: string;
-  bannerUrl?: string;
+  logo?: string;
+  banner?: string;
   members: TeamMember[];
   _count?: {
     members: number;
@@ -34,6 +35,7 @@ interface Team {
 }
 
 export default function TeamsPage() {
+  const router = useRouter();
   const { session } = useSessionStore();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
@@ -253,8 +255,8 @@ export default function TeamsPage() {
               <div key={team.id} className="bg-accent/50 rounded-lg p-4 hover:bg-accent/70 transition-colors">
                 <div className="flex items-start gap-4">
                   <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    {team.logoUrl ? (
-                      <Image src={team.logoUrl} alt={team.displayName} width={64} height={64} className="rounded-lg" />
+                    {team.logo ? (
+                      <Image src={team.logo} alt={team.displayName} width={64} height={64} className="rounded-lg" />
                     ) : (
                       <Icon icon="mdi:account-group" width="32" height="32" className="text-primary" />
                     )}
@@ -292,7 +294,7 @@ export default function TeamsPage() {
                   </div>
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <Button size="sm" variant="outline" className="font-nunito text-sm">
+                  <Button size="sm" variant="outline" className="font-nunito text-sm" onClick={() => router.push(`/dashboard/teams/${team.name}`)}>
                     <Icon icon="mdi:cog" width="16" height="16" />
                     Manage
                   </Button>
@@ -316,8 +318,8 @@ export default function TeamsPage() {
               <div key={team.id} className="bg-accent/50 rounded-lg p-4 hover:bg-accent/70 transition-colors">
                 <div className="flex items-start gap-4">
                   <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    {team.logoUrl ? (
-                      <Image src={team.logoUrl} alt={team.displayName} width={64} height={64} className="rounded-lg" />
+                    {team.logo ? (
+                      <Image src={team.logo} alt={team.displayName} width={64} height={64} className="rounded-lg" />
                     ) : (
                       <Icon icon="mdi:account-group" width="32" height="32" className="text-primary" />
                     )}
@@ -357,7 +359,7 @@ export default function TeamsPage() {
                   </div>
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <Button size="sm" variant="outline" className="font-nunito text-sm">
+                  <Button size="sm" variant="outline" className="font-nunito text-sm" onClick={() => router.push(`/dashboard/teams/${team.name}`)}>
                     <Icon icon="mdi:eye" width="16" height="16" />
                     View
                   </Button>
