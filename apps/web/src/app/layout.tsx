@@ -20,7 +20,7 @@ const nunito = Nunito({
 
 export const metadata: Metadata = {
     title: 'Orbis',
-    description: '<meta name="description" content="The ultimate Hytale community hub. Discover servers, browse marketplace for plugins & mods. Open-source platform for players and creators.">',
+    description: 'The ultimate Hytale community hub. Discover servers, browse marketplace for plugins & mods. Open-source platform for players and creators.',
 };
 
 async function getSessionFromBackend() {
