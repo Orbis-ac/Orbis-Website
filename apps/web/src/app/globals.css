@@ -38,7 +38,7 @@
   --font-nunito: var(--font-nunito), sans-serif;
 
   /* Radius */
-  --radius: 0.625rem;
+  --radius: 0.95rem;
 
   /* Shadow custom */
   --text-shadow-title: 0 0 20px;
@@ -69,6 +69,7 @@
   --muted-foreground: #c7f4fa;
   --card: #032125;
   --card-foreground: #c7f4fa;
+  --radius: 1.625rem;
   --popover: #032125;
   --popover-foreground: #c7f4fa;
   --accent: #06363d;
@@ -130,7 +131,7 @@
   --font-serif: var(--font-serif);
   --font-hebden: var(--font-hebden);
   --font-nunito: var(--font-nunito);
-
+  --radius: 1.625rem;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
